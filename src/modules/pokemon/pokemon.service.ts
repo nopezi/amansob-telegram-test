@@ -3,11 +3,69 @@ import axios from 'axios';
 
 @Injectable()
 export class PokemonService {
+  async getList(
+    client: any,
+    message: any,
+    messageSended: boolean,
+  ): Promise<any> {
+    const sender = await message.getSender();
+    let result: boolean = false;
+    try {
+      const pesanPecah = message?.text?.split(' ');
+      if (
+        !messageSended &&
+        pesanPecah.length > 1 &&
+        pesanPecah[0] == 'pokemon'
+      ) {
+        await axios({
+          method: 'get',
+          url:
+            process.env.API_POKEMON + `pokemon?limit=${pesanPecah[1]}&offset=0`,
+        })
+          .then(async (response) => {
+            const pesan = `**This list of pokemon**\n`;
+
+            await client.sendMessage(sender, {
+              message: `${pesan}`,
+            });
+
+            for (const listPokemon of response?.data?.results) {
+              console.log(
+                '🚀 ~ PokemonService ~ .then ~ listPokemon?.name:',
+                listPokemon?.name,
+              );
+              await this.getDetail(
+                client,
+                {
+                  text: listPokemon?.name,
+                },
+                false,
+              );
+            }
+
+            messageSended = true;
+          })
+          .catch(() => {
+            messageSended = false;
+          });
+      }
+
+      return messageSended;
+    } catch (error) {
+      await client.sendMessage(sender, {
+        message: `${error}`,
+      });
+      result = true;
+      return result;
+    }
+  }
+
   async getDetail(
     client: any,
     message: any,
     messageSended: boolean,
   ): Promise<any> {
+    console.log('🚀 ~ PokemonService ~ getDetail:', message);
     const sender = await message.getSender();
     let result: boolean = false;
     try {
@@ -128,6 +186,46 @@ export class PokemonService {
             for (const stat of response?.data?.pokemon) {
               pesan += `**${stat?.pokemon.name}** \n`;
             }
+
+            await client.sendMessage(sender, {
+              message: `${pesan}`,
+            });
+
+            messageSended = true;
+          })
+          .catch(() => {
+            messageSended = false;
+          });
+      }
+
+      return messageSended;
+    } catch (error) {
+      await client.sendMessage(sender, {
+        message: `${error}`,
+      });
+      result = true;
+      return result;
+    }
+  }
+
+  async getByStat(
+    client: any,
+    message: any,
+    messageSended: boolean,
+  ): Promise<any> {
+    const sender = await message.getSender();
+    let result: boolean = false;
+    try {
+      if (!messageSended) {
+        let pesan: string;
+        await axios({
+          method: 'get',
+          url: process.env.API_POKEMON + `stat/${message?.text}`,
+        })
+          .then(async (response) => {
+            pesan = `**Pokemon With Stat** : ${response?.data?.name} \n\n`;
+
+            pesan += `**Move Damage Type** : ${response?.data?.move_damage_class?.name} \n`;
 
             await client.sendMessage(sender, {
               message: `${pesan}`,

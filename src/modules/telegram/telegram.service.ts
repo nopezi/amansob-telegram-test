@@ -78,18 +78,29 @@ export class TelegramService {
             message,
             messageSended,
           );
+          messageSended = await this.pokemonService.getByStat(
+            client,
+            message,
+            messageSended,
+          );
+          messageSended = await this.listPokemon(
+            client,
+            message,
+            messageSended,
+          );
+          messageSended = await this.pokemonService.getList(
+            client,
+            message,
+            messageSended,
+          );
           await this.notFound(client, message, messageSended);
         }
       }, new NewMessage({}));
 
-      const terimaTombol = await client.invoke(
+      await client.invoke(
         new Api.bots.GetBotMenuButton({
           userId: 'rumahsakit_bot',
         }),
-      );
-      console.log(
-        '🚀 ~ TelegramService ~ client.addEventHandler ~ terimaTombol:',
-        terimaTombol,
       );
     } catch (error) {
       throw error;
@@ -101,8 +112,33 @@ export class TelegramService {
       let result: boolean = false;
       if (!messageSended && message?.text.toLowerCase() == '/start') {
         const sender = await message.getSender();
+        let pesan = `hi dear, your id is ${message.senderId} \n\n`;
+        pesan += `This is pokemon bot`;
         await client.sendMessage(sender, {
-          message: `hi your id is ${message.senderId}`,
+          message: pesan,
+        });
+        result = true;
+      }
+
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async listPokemon(
+    client: any,
+    message: any,
+    messageSended: boolean,
+  ): Promise<any> {
+    try {
+      let result: boolean = false;
+      if (!messageSended && message?.text.toLowerCase() == 'pokemon') {
+        const sender = await message.getSender();
+        let pesan = `to show list pokemon, please type pokemon total data \n\n`;
+        pesan += `example : pokemon 20`;
+        await client.sendMessage(sender, {
+          message: pesan,
         });
         result = true;
       }

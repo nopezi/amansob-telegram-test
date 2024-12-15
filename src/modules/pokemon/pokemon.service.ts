@@ -23,25 +23,14 @@ export class PokemonService {
             process.env.API_POKEMON + `pokemon?limit=${pesanPecah[1]}&offset=0`,
         })
           .then(async (response) => {
-            const pesan = `**This list of pokemon**\n`;
+            let pesan = `**This list of pokemon**\n`;
 
+            for (const listPokemon of response?.data?.results) {
+              pesan += `${listPokemon?.name} \n`;
+            }
             await client.sendMessage(sender, {
               message: `${pesan}`,
             });
-
-            for (const listPokemon of response?.data?.results) {
-              console.log(
-                '🚀 ~ PokemonService ~ .then ~ listPokemon?.name:',
-                listPokemon?.name,
-              );
-              await this.getDetail(
-                client,
-                {
-                  text: listPokemon?.name,
-                },
-                false,
-              );
-            }
 
             messageSended = true;
           })
